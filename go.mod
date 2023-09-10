@@ -1,4 +1,4 @@
-module example.com/test/jenkins
+module github.com/atwatanmalikm/terraform-provider-jenkins
 
 go 1.19
 
