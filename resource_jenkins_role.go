@@ -26,8 +26,8 @@ func resourceJenkinsRole() *schema.Resource {
 				ForceNew: true,
 			},
 			"role": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
 				Description: "A structured role objects",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
