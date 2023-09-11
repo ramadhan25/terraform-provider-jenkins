@@ -1,8 +1,5 @@
 # Terraform Provider
 
-![Unit Tests](https://github.com/taiidani/terraform-provider-jenkins/workflows/Unit%20Tests/badge.svg)
-![Acceptance Tests](https://github.com/taiidani/terraform-provider-jenkins/workflows/Acceptance%20Tests/badge.svg)
-
 - Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
@@ -11,7 +8,7 @@ This is a community provider and is not supported by Hashicorp.
 
 ## Installation
 
-This provider has been published to the Terraform Registry at https://registry.terraform.io/providers/taiidani/jenkins. Please visit the registry for documentation and installation instructions.
+This provider has been published to the Terraform Registry at https://registry.terraform.io/providers/atwatanmalikm/jenkins. Please visit the registry for documentation and installation instructions.
 
 ## Contributors
 
