@@ -1,4 +1,4 @@
-# jenkins_folder Resource
+# jenkins_role Resource
 
 Manages a role assignment within Jenkins.
 
