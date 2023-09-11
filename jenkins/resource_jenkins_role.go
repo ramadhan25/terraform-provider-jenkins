@@ -1,10 +1,12 @@
-package main
+package jenkins
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -12,12 +14,12 @@ import (
 
 func resourceJenkinsRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceJenkinsRoleCreate,
-		Read:   resourceJenkinsRoleRead,
-		Update: resourceJenkinsRoleUpdate,
-		Delete: resourceJenkinsRoleDelete,
+		CreateContext: resourceJenkinsRoleCreate,
+		ReadContext:   resourceJenkinsRoleRead,
+		UpdateContext: resourceJenkinsRoleUpdate,
+		DeleteContext: resourceJenkinsRoleDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceJenkinsRoleImport,
+			StateContext: resourceJenkinsRoleImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"user_id": {
@@ -62,12 +64,13 @@ func resourceJenkinsRole() *schema.Resource {
 	}
 }
 
-func initVariables(d *schema.ResourceData, m interface{}) (jenkins_url, jenkins_username, jenkins_api_token, user_id string, role_set *schema.Set) {
-	config := m.(MyProviderConfig)
+func initVariables(ctx context.Context, d *schema.ResourceData, m interface{}) (jenkins_url, jenkins_username, jenkins_api_token, user_id string, role_set *schema.Set) {
+	config := m.(Config)
+	//config := ctx.Value("jenkinsConfig").(Config)
 
-	jenkins_url = config.jenkins_url
-	jenkins_username = config.jenkins_username
-	jenkins_api_token = config.jenkins_api_token
+	jenkins_url = config.ServerURL
+	jenkins_username = config.Username
+	jenkins_api_token = config.Password
 	user_id = d.Get("user_id").(string)
 	role_set = d.Get("role").(*schema.Set)
 
@@ -112,8 +115,8 @@ func sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_to
 	return nil
 }
 
-func resourceJenkinsRoleCreate(d *schema.ResourceData, m interface{}) error {
-	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(d, m)
+func resourceJenkinsRoleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(ctx, d, m)
 
 	roleList := role_set.List()
 	endpoint := "/role-strategy/strategy/assignRole"
@@ -129,7 +132,7 @@ func resourceJenkinsRoleCreate(d *schema.ResourceData, m interface{}) error {
 			for _, globalRole := range globalRoles {
 				role_name := globalRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -141,7 +144,7 @@ func resourceJenkinsRoleCreate(d *schema.ResourceData, m interface{}) error {
 			for _, itemRole := range itemRoles {
 				role_name := itemRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -153,7 +156,7 @@ func resourceJenkinsRoleCreate(d *schema.ResourceData, m interface{}) error {
 			for _, nodeRole := range nodeRoles {
 				role_name := nodeRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -165,16 +168,16 @@ func resourceJenkinsRoleCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceJenkinsRoleRead(d *schema.ResourceData, m interface{}) error {
+func resourceJenkinsRoleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceJenkinsRoleUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceJenkinsRoleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceJenkinsRoleDelete(d *schema.ResourceData, m interface{}) error {
-	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(d, m)
+func resourceJenkinsRoleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(ctx, d, m)
 
 	roleList := role_set.List()
 	endpoint := "/role-strategy/strategy/unassignRole"
@@ -190,7 +193,7 @@ func resourceJenkinsRoleDelete(d *schema.ResourceData, m interface{}) error {
 			for _, globalRole := range globalRoles {
 				role_name := globalRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -202,7 +205,7 @@ func resourceJenkinsRoleDelete(d *schema.ResourceData, m interface{}) error {
 			for _, itemRole := range itemRoles {
 				role_name := itemRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -214,7 +217,7 @@ func resourceJenkinsRoleDelete(d *schema.ResourceData, m interface{}) error {
 			for _, nodeRole := range nodeRoles {
 				role_name := nodeRole.(string)
 				if err := sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_token, user_id, role_name, role_type); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -226,30 +229,14 @@ func resourceJenkinsRoleDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func convertToSet(data map[string][]string) *schema.Set {
-	// Create *schema.Set
-	set := schema.NewSet(schema.HashString, []interface{}{})
-
-	// Convert
-	for key, values := range data {
-		for _, value := range values {
-			item := map[string]interface{}{
-				key: value,
-			}
-			set.Add(item)
-		}
-	}
-
-	return set
-}
-
-func resourceJenkinsRoleImport(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceJenkinsRoleImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	user_id := d.Id()
-	config := m.(MyProviderConfig)
+	config := m.(Config)
+	//config := ctx.Value("jenkinsConfig").(Config)
 
-	jenkins_url := config.jenkins_url
-	jenkins_username := config.jenkins_username
-	jenkins_api_token := config.jenkins_api_token
+	jenkins_url := config.ServerURL
+	jenkins_username := config.Username
+	jenkins_api_token := config.Password
 
 	roleTypes := []string{"globalRoles", "projectRoles", "slaveRoles"}
 	roleData := map[string][]string{}
