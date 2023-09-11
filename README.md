@@ -51,4 +51,4 @@ $ make generate
 
 ## Attribution
 
-This provider design was originally inspired from the work at [dihedron/terraform-provider-jenkins](https://github.com/dihedron/terraform-provider-jenkins).
+This provider is inspired from the work of https://github.com/taiidani/terraform-provider-jenkins. Most of the codes and documentations are copied from there.
