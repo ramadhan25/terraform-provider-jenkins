@@ -66,7 +66,6 @@ func resourceJenkinsRole() *schema.Resource {
 
 func initVariables(ctx context.Context, d *schema.ResourceData, m interface{}) (jenkins_url, jenkins_username, jenkins_api_token, user_id string, role_set *schema.Set) {
 	config := m.(Config)
-	//config := ctx.Value("jenkinsConfig").(Config)
 
 	jenkins_url = config.ServerURL
 	jenkins_username = config.Username
@@ -82,7 +81,7 @@ func sendRequest(endpoint, method, jenkins_url, jenkins_username, jenkins_api_to
 	writer := multipart.NewWriter(body)
 	writer.WriteField("type", role_type)
 	writer.WriteField("roleName", role_name)
-	writer.WriteField("sid", user_id)
+	writer.WriteField("user", user_id)
 	writer.Close()
 
 	var req *http.Request
@@ -119,7 +118,7 @@ func resourceJenkinsRoleCreate(ctx context.Context, d *schema.ResourceData, m in
 	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(ctx, d, m)
 
 	roleList := role_set.List()
-	endpoint := "/role-strategy/strategy/assignRole"
+	endpoint := "/role-strategy/strategy/assignUserRole"
 	method := "POST"
 
 	for _, role := range roleList {
@@ -180,7 +179,7 @@ func resourceJenkinsRoleDelete(ctx context.Context, d *schema.ResourceData, m in
 	jenkins_url, jenkins_username, jenkins_api_token, user_id, role_set := initVariables(ctx, d, m)
 
 	roleList := role_set.List()
-	endpoint := "/role-strategy/strategy/unassignRole"
+	endpoint := "/role-strategy/strategy/unassignUserRole"
 	method := "POST"
 
 	for _, role := range roleList {
@@ -232,7 +231,6 @@ func resourceJenkinsRoleDelete(ctx context.Context, d *schema.ResourceData, m in
 func resourceJenkinsRoleImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	user_id := d.Id()
 	config := m.(Config)
-	//config := ctx.Value("jenkinsConfig").(Config)
 
 	jenkins_url := config.ServerURL
 	jenkins_username := config.Username
